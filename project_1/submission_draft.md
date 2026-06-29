@@ -4,7 +4,7 @@ This document contains all the written paragraphs, statistical calculations, dat
 
 ---
 
-## PART 1 — Dataset Selection
+## PART 1 ï¿½ Dataset Selection
 
 **Name of Dataset:** Student Performance Dataset
 **Source URL:** [https://archive.ics.uci.edu/ml/datasets/Student+Performance](https://archive.ics.uci.edu/ml/datasets/Student+Performance)
@@ -17,21 +17,21 @@ This document contains all the written paragraphs, statistical calculations, dat
 
 ---
 
-## PART 2 — ETL Pipeline
+## PART 2 ï¿½ ETL Pipeline
 
 ### Summary of Pipeline Steps:
 1. **Extraction:** Loaded `raw/original_dataset.csv` (original semicolon-delimited CSV).
 2. **Inspection:** Checked for nulls (`df.isnull().sum()`), duplicates (`df.duplicated().sum()`), and datatypes (`df.info()`).
 3. **Transformation:**
    - Standardized column names by converting them to lowercase.
-   - Handled missing values (filled numericals with median, categoricals with mode—none were present, but code is functional).
+   - Handled missing values (filled numericals with median, categoricals with modeï¿½none were present, but code is functional).
    - Removed any trailing whitespaces from object fields.
 4. **Validation:** Confirmed that total remaining nulls count is 0, duplicates count is 0, and column value ranges are valid (e.g. grades between 0 and 20).
 5. **Loading:** Saved clean dataframe to `gold/clean_data.csv` ready for database loading and modeling.
 
 ---
 
-## PART 3 — Database Schema
+## PART 3 ï¿½ Database Schema
 
 ### Table Definitions & Creation SQL:
 ```sql
@@ -97,7 +97,7 @@ The database contains 4 relational tables. The primary table is `students`, whic
 
 ---
 
-## PART 4 — Exploratory Data Analysis
+## PART 4 ï¿½ Exploratory Data Analysis
 
 ### 4A: Descriptive Statistics Interpretation (Minimum 5 Sentences):
 "The summary statistics reveal that the average student age is approximately 16.7 years, with a range spanning from 15 to 22 years. The target grade `G3` has a mean of 10.42 out of 20, though it displays a standard deviation of 4.58, indicating a fairly wide spread in student performance. Interestingly, the minimum score in `G3` is 0, suggesting a subset of students did not take the final exam or scored 0. Absences vary significantly from 0 to 75, with a mean of 5.71 days, indicating a highly skewed distribution with outliers. Categorical analysis shows that a majority of mothers work in services or at home, and weekly study time has a median of 2.0 (representing 2 to 5 hours per week), suggesting room for academic habit improvement."
@@ -126,7 +126,7 @@ The database contains 4 relational tables. The primary table is `students`, whic
 
 ---
 
-## PART 5 — Predictive Model Development
+## PART 5 ï¿½ Predictive Model Development
 
 ### 5A: Model Architecture Selection (5-Fold Cross-Validation CV Results):
 
@@ -172,7 +172,7 @@ The database contains 4 relational tables. The primary table is `students`, whic
 
 ---
 
-## PART 6 — Predictions
+## PART 6 ï¿½ Predictions
 
 * **Sample Student Features:** (Age: 18, studytime: 4 hours, absences: 2, G2: 12, G1: 11...)
 * **Model Predicted G3 Grade:** **12.81**

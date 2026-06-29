@@ -179,6 +179,7 @@ def main():
     
     # Save the capacity forecasting plot locally
     import matplotlib.pyplot as plt
+    os.makedirs('outputs', exist_ok=True)
     plt.figure(figsize=(10, 5))
     plt.scatter(days, db_load, color='indigo', label='Historical CPU Load (%)')
     future_days = np.array(range(1, days_to_threshold + 5)).reshape(-1, 1)
@@ -432,7 +433,16 @@ Minute 10: Avg Response Time = 139.77 ms
         ]
     })
     
-    # Phase 4 Code Module 1, 2, 3
+    # Phase 4 - Module 1: Database Setup
+    cells.append({
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [
+            "### Module 1: Database Setup\n",
+            "Creates the `carepulse.db` SQLite database, initializes the normalized tables (`patients`, `doctors`, `appointments`, `billing`), inserts sample data, and prints verification counts."
+        ]
+    })
+
     cells.append({
         "cell_type": "code",
         "execution_count": None,
@@ -454,7 +464,7 @@ Minute 10: Avg Response Time = 139.77 ms
             "cursor = conn.cursor()\n",
             "cursor.execute('PRAGMA foreign_keys = ON;')\n",
             "\n",
-            "# 1. DATABASE SETUP (Module 1)\n",
+            "# Create tables\n",
             "cursor.executescript('''\n",
             "CREATE TABLE patients (\n",
             "    patient_id INTEGER PRIMARY KEY AUTOINCREMENT,\n",
@@ -515,10 +525,26 @@ Minute 10: Avg Response Time = 139.77 ms
             "print('--- Verification Counts ---')\n",
             "for t in ['patients', 'doctors']:\n",
             "    cursor.execute(f'SELECT COUNT(*) FROM {t};')\n",
-            "    print(f\"{t.capitalize()} count: {cursor.fetchone()[0]}\")\n",
-            "\n",
-            "\n",
-            "# 2. CORE DATA FUNCTIONS (Module 2)\n",
+            "    print(f\"{t.capitalize()} count: {cursor.fetchone()[0]}\")"
+        ]
+    })
+
+    # Phase 4 - Module 2: Core Data Functions
+    cells.append({
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [
+            "### Module 2: Core Data Functions\n",
+            "Defines database lookups to search doctors, list patient appointments, and check patient billing invoices."
+        ]
+    })
+
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
             "def search_doctors(specialty=None, max_fee=None):\n",
             "    query = \"SELECT * FROM doctors WHERE 1=1\"\n",
             "    params = []\n",
@@ -533,8 +559,50 @@ Minute 10: Avg Response Time = 139.77 ms
             "    c.execute(query, params)\n",
             "    return c.fetchall()\n",
             "\n",
+            "def list_patient_appointments(patient_id):\n",
+            "    c = conn.cursor()\n",
+            "    c.execute('''\n",
+            "        SELECT a.appointment_id, d.name, a.appointment_date, a.time_slot, a.status \n",
+            "        FROM appointments a\n",
+            "        JOIN doctors d ON a.doctor_id = d.doctor_id\n",
+            "        WHERE a.patient_id = ?\n",
+            "    ''', (patient_id,))\n",
+            "    return c.fetchall()\n",
             "\n",
-            "# 3. MAIN BUSINESS FUNCTION (Module 3)\n",
+            "def get_billing_status(patient_id):\n",
+            "    c = conn.cursor()\n",
+            "    c.execute('''\n",
+            "        SELECT b.billing_id, a.appointment_id, b.amount_due, b.payment_status\n",
+            "        FROM billing b\n",
+            "        JOIN appointments a ON b.appointment_id = a.appointment_id\n",
+            "        WHERE a.patient_id = ?\n",
+            "    ''', (patient_id,))\n",
+            "    return c.fetchall()\n",
+            "\n",
+            "# Test core functions\n",
+            "print(\"--- Search Cardiology Doctors: ---\")\n",
+            "print(search_doctors(specialty='Cardiology'))\n",
+            "print(\"\\n--- Search Doctors with fee <= $110: ---\")\n",
+            "print(search_doctors(max_fee=110.0))"
+        ]
+    })
+
+    # Phase 4 - Module 3: Main Business Function
+    cells.append({
+        "cell_type": "markdown",
+        "metadata": {},
+        "source": [
+            "### Module 3: Main Business Function\n",
+            "Defines the primary booking logic that prevents double-booking conflicts and automatically generates an unpaid invoice bill matching the doctor's consult fee."
+        ]
+    })
+
+    cells.append({
+        "cell_type": "code",
+        "execution_count": None,
+        "metadata": {},
+        "outputs": [],
+        "source": [
             "def book_appointment(patient_id, doctor_id, date, slot):\n",
             "    c = conn.cursor()\n",
             "    # Validate doctor exists\n",
@@ -562,10 +630,17 @@ Minute 10: Avg Response Time = 139.77 ms
             "    conn.commit()\n",
             "    return app_id\n",
             "\n",
-            "# Seed some appointments\n",
-            "book_appointment(1, 1, '2026-06-25', '09:00 AM')\n",
-            "book_appointment(2, 2, '2026-06-25', '11:00 AM')\n",
-            "book_appointment(1, 3, '2026-06-26', '02:00 PM')"
+            "# Book appointments\n",
+            "print('Booking appointments...')\n",
+            "app1 = book_appointment(1, 1, '2026-06-25', '09:00 AM')\n",
+            "app2 = book_appointment(2, 2, '2026-06-25', '11:00 AM')\n",
+            "app3 = book_appointment(1, 3, '2026-06-26', '02:00 PM')\n",
+            "print(f'Successfully Booked Appointments: {app1}, {app2}, {app3}')\n",
+            "\n",
+            "print('\\n--- John Doe (Patient 1) Active Appointments: ---')\n",
+            "print(list_patient_appointments(1))\n",
+            "print('\\n--- John Doe (Patient 1) Invoices: ---')\n",
+            "print(get_billing_status(1))"
         ]
     })
     
